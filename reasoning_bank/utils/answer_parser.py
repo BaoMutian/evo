@@ -121,9 +121,6 @@ def normalize_math_answer(answer: str) -> str:
     if not answer:
         return ""
     
-    # 移除多余空格
-    answer = " ".join(answer.split())
-    
     # 移除 $ 符号
     answer = answer.replace("$", "")
     
@@ -138,13 +135,16 @@ def normalize_math_answer(answer: str) -> str:
         (r'\\cdot', '·'),
         (r'\\left', ''),
         (r'\\right', ''),
-        (r'\\,', ' '),
-        (r'\\;', ' '),
+        (r'\\,', ''),
+        (r'\\;', ''),
         (r'\\!', ''),
     ]
     
     for old, new in replacements:
         answer = re.sub(old, new, answer)
+    
+    # 移除所有空格（便于比较）
+    answer = re.sub(r'\s+', '', answer)
     
     return answer.strip()
 
