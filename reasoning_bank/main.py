@@ -192,6 +192,12 @@ def parse_args():
         action="store_true",
         help="详细输出",
     )
+    
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="调试模式：打印所有 LLM 的完整 prompt 和响应",
+    )
 
     parser.add_argument(
         "--seed",
@@ -240,6 +246,7 @@ def run_single_turn(args, logger):
     llm_service = LLMService(
         model=args.model,
         temperature=args.temperature,
+        debug=args.debug,
     )
 
     # 根据 MaTTS 模式选择运行方式
@@ -393,6 +400,7 @@ def run_multi_turn(args, logger):
     llm = LLMService(
         model=args.model,
         temperature=args.temperature,
+        debug=args.debug,
     )
 
     # 创建 Extractor
