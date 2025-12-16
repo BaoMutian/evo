@@ -126,9 +126,9 @@ class LLMService:
             messages.extend(history)
 
         messages.append({"role": "user", "content": prompt})
-        
+
         return messages
-    
+
     def _debug_print_request(
         self,
         model: str,
@@ -151,7 +151,7 @@ class LLMService:
             print("-" * 40)
             print(content)
         print("\n" + "=" * 80 + "\n")
-    
+
     def _debug_print_response(self, response: 'LLMResponse'):
         """打印调试信息：响应"""
         print("\n" + "=" * 80)
@@ -169,7 +169,7 @@ class LLMService:
         print("💬 CONTENT:")
         print(response.content)
         print("\n" + "=" * 80 + "\n")
-    
+
     def call(
         self,
         prompt: str,
@@ -245,11 +245,11 @@ class LLMService:
                         usage=completion.usage.model_dump() if completion.usage else None,
                         time_taken=round(time.time() - start_time, 2),
                     )
-                
+
                 # Debug: 打印完整响应
                 if self.debug:
                     self._debug_print_response(response)
-                
+
                 return response
 
             except Exception as e:
@@ -290,7 +290,7 @@ class LLMService:
         max_tokens = max_tokens or self.max_tokens
 
         messages = self._build_messages(prompt, system_prompt, history)
-        
+
         # Debug: 打印完整 prompt
         if self.debug:
             self._debug_print_request(model, messages, temperature, max_tokens)
@@ -318,11 +318,11 @@ class LLMService:
                     usage=completion.usage.model_dump() if completion.usage else None,
                     time_taken=round(time.time() - start_time, 2),
                 )
-                
+
                 # Debug: 打印完整响应
                 if self.debug:
                     self._debug_print_response(response)
-                
+
                 return response
 
             except Exception as e:
@@ -441,7 +441,7 @@ def get_llm_service(**kwargs) -> LLMService:
 
 def set_debug_mode(enabled: bool = True):
     """设置全局 LLM 调试模式
-    
+
     Args:
         enabled: 是否启用调试模式
     """

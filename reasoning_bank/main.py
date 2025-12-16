@@ -192,7 +192,7 @@ def parse_args():
         action="store_true",
         help="详细输出",
     )
-    
+
     parser.add_argument(
         "--debug",
         action="store_true",
@@ -307,7 +307,7 @@ def run_single_turn(args, logger):
                     success_count += 1
 
                 # 添加记忆到记忆库
-                if memory_bank and memories:
+                if memory_bank is not None and memories:
                     memory_bank.add(
                         query=result.query,
                         items=memories,
@@ -433,8 +433,10 @@ def run_multi_turn(args, logger):
             if result["success"]:
                 success_count += 1
 
-            # 提取记忆
-            if extractor and memory_bank:
+            # 提取记忆（注意：memory_bank 为空时 bool 值为 False，需要用 is not None）
+            if extractor is not None and memory_bank is not None:
+                logger.info(
+                    f"开始提取记忆 (task_id={task_id}, success={result['success']})")
                 agent_result = AgentResult(
                     task_id=task_id,
                     query=result["task_desc"],
@@ -445,6 +447,7 @@ def run_multi_turn(args, logger):
                 )
 
                 items = extractor.extract(agent_result, "")
+                logger.info(f"提取到 {len(items)} 条记忆项")
                 if items:
                     memory_bank.add(
                         query=result["task_desc"],
@@ -453,6 +456,12 @@ def run_multi_turn(args, logger):
                         trajectory_id=task_id,
                     )
                     memories_added += len(items)
+                    logger.info(f"成功添加到记忆库，当前记忆库大小: {len(memory_bank)}")
+            else:
+                if extractor is None:
+                    logger.warning("Extractor 未初始化，跳过记忆提取")
+                if memory_bank is None:
+                    logger.warning("MemoryBank 未初始化，跳过记忆提取")
 
             # 更新进度条
             current = iterator.n + 1
@@ -480,7 +489,7 @@ def run_multi_turn(args, logger):
     logger.info(f"平均步数: {total_steps/total:.2f}")
     if args.use_memory:
         logger.info(f"新增记忆: {memories_added}")
-        if memory_bank:
+        if memory_bank is not None:
             logger.info(f"记忆库大小: {len(memory_bank)}")
     logger.info("=" * 50)
 
@@ -508,7 +517,7 @@ def _run_multiturn_episode(env, llm, memory_bank, task_id, max_steps, temperatur
 
     # 检索记忆
     memories = []
-    if memory_bank:
+    if memory_bank is not None:
         memories = memory_bank.retrieve(task_desc, top_k=1)
         if memories and verbose:
             print(f"[记忆] 检索到 {len(memories)} 条相关经验")

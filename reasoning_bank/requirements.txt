@@ -21,8 +21,8 @@ asyncio-throttle>=1.0.0
 tqdm>=4.65.0
 colorama>=0.4.6
 
-# 可选：多轮环境依赖（如需运行 ALFWorld/ScienceWorld 请取消注释）
-# alfworld>=0.3.0
-# scienceworld>=1.1.0
-# textworld>=1.5.0
+# 多轮环境依赖（如需运行 ALFWorld/ScienceWorld 请取消注释）
+alfworld>=0.3.0
+scienceworld>=1.1.0
+textworld>=1.5.0
 
