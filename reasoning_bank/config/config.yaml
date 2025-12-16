@@ -4,7 +4,7 @@
 llm:
   api_base: "https://openrouter.ai/api/v1"  # 可通过环境变量 OPENROUTER_API_BASE 覆盖
   api_key: ""  # 通过环境变量 OPENROUTER_API_KEY 设置
-  default_model: "deepseek/deepseek-chat-v3-0324"
+  default_model: "qwen/qwen-2.5-7b-instruct"
   temperature: 0.3
   max_tokens: 4096
   timeout: 120  # 请求超时时间（秒）

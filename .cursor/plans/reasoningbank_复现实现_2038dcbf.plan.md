@@ -62,7 +62,7 @@ todos:
       - evolution-loop
   - id: main-cli
     content: 实现 CLI 入口和端到端测试
-    status: in_progress
+    status: completed
     dependencies:
       - evolution-loop
       - multi-turn-envs

@@ -277,7 +277,31 @@ class MemoryExtractor:
                     logger.warning("未找到 JSON 格式的提取结果")
                     return []
             
-            items = json.loads(json_str)
+            # 预处理：修复 LaTeX 转义字符问题（如 \( \) \sqrt \theta 等）
+            # JSON 只允许特定转义序列：\" \\ \/ \b \f \n \r \t \uXXXX
+            # 将其他 \ 后跟非法字符的情况替换为 \\
+            def fix_latex_escapes(s):
+                result = []
+                i = 0
+                while i < len(s):
+                    if s[i] == '\\' and i + 1 < len(s):
+                        next_char = s[i + 1]
+                        # JSON 合法转义字符
+                        if next_char in '"\\bfnrtu/':
+                            result.append(s[i])
+                            result.append(next_char)
+                            i += 2
+                        else:
+                            # 非法转义，添加额外反斜杠
+                            result.append('\\\\')
+                            i += 1
+                    else:
+                        result.append(s[i])
+                        i += 1
+                return ''.join(result)
+            
+            json_str_fixed = fix_latex_escapes(json_str)
+            items = json.loads(json_str_fixed)
             
             # 验证格式
             valid_items = []
