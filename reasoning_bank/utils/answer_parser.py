@@ -124,8 +124,8 @@ def normalize_math_answer(answer: str) -> str:
     # 移除 $ 符号
     answer = answer.replace("$", "")
     
-    # 规范化分数
-    answer = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1)/(\2)', answer)
+    # 规范化分数 (支持 \frac 和 \dfrac)
+    answer = re.sub(r'\\d?frac\{([^}]+)\}\{([^}]+)\}', r'(\1)/(\2)', answer)
     
     # 规范化常见 LaTeX
     replacements = [

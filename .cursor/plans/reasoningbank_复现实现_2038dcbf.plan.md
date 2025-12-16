@@ -52,7 +52,7 @@ todos:
       - env-base
   - id: multi-turn-envs
     content: 实现 ALFWorld 和 ScienceWorld 环境适配器
-    status: pending
+    status: completed
     dependencies:
       - env-base
   - id: matts-module
