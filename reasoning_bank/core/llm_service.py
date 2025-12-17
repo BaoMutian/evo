@@ -135,29 +135,29 @@ class LLMService:
 
     def _strip_thinking_tags(self, content: str) -> Tuple[str, Optional[str]]:
         """从响应中提取并移除 <think> 标签内容
-        
+
         Qwen3 模型在思考模式下会在 content 中返回 <think>...</think> 标签包裹的思考内容。
         此方法将思考内容提取出来，并返回清理后的内容。
-        
+
         Args:
             content: 原始响应内容
-            
+
         Returns:
             (cleaned_content, reasoning): 清理后的内容和提取的思考内容
         """
         if not content:
             return content, None
-        
+
         # 匹配 <think>...</think> 标签（支持多行）
         think_pattern = re.compile(r'<think>(.*?)</think>', re.DOTALL)
-        
+
         # 提取所有思考内容
         think_matches = think_pattern.findall(content)
         reasoning = '\n'.join(match.strip() for match in think_matches) if think_matches else None
-        
+
         # 移除 <think> 标签及其内容
         cleaned_content = think_pattern.sub('', content).strip()
-        
+
         return cleaned_content, reasoning
 
     def _debug_print_request(
@@ -267,7 +267,8 @@ class LLMService:
                             content += chunk.choices[0].delta.content
 
                     # 处理 Qwen3 思考模式的 <think> 标签
-                    cleaned_content, extracted_reasoning = self._strip_thinking_tags(content)
+                    cleaned_content, extracted_reasoning = self._strip_thinking_tags(
+                        content)
                     # 优先使用 API 返回的 reasoning，其次使用从 <think> 标签提取的
                     final_reasoning = reasoning if reasoning else extracted_reasoning
 
@@ -279,10 +280,12 @@ class LLMService:
                     )
                 else:
                     raw_content = completion.choices[0].message.content
-                    api_reasoning = getattr(completion.choices[0].message, 'reasoning', None)
-                    
+                    api_reasoning = getattr(
+                        completion.choices[0].message, 'reasoning', None)
+
                     # 处理 Qwen3 思考模式的 <think> 标签
-                    cleaned_content, extracted_reasoning = self._strip_thinking_tags(raw_content)
+                    cleaned_content, extracted_reasoning = self._strip_thinking_tags(
+                        raw_content)
                     # 优先使用 API 返回的 reasoning，其次使用从 <think> 标签提取的
                     final_reasoning = api_reasoning if api_reasoning else extracted_reasoning
 
@@ -364,10 +367,12 @@ class LLMService:
                 completion = await self.async_client.chat.completions.create(**params)
 
                 raw_content = completion.choices[0].message.content
-                api_reasoning = getattr(completion.choices[0].message, 'reasoning', None)
-                
+                api_reasoning = getattr(
+                    completion.choices[0].message, 'reasoning', None)
+
                 # 处理 Qwen3 思考模式的 <think> 标签
-                cleaned_content, extracted_reasoning = self._strip_thinking_tags(raw_content)
+                cleaned_content, extracted_reasoning = self._strip_thinking_tags(
+                    raw_content)
                 # 优先使用 API 返回的 reasoning，其次使用从 <think> 标签提取的
                 final_reasoning = api_reasoning if api_reasoning else extracted_reasoning
 
