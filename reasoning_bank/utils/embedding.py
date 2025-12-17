@@ -8,6 +8,8 @@ import numpy as np
 from typing import List, Union, Optional
 from pathlib import Path
 
+from reasoning_bank.utils.config import get_config
+
 # 延迟导入，避免启动时加载模型
 _model = None
 _model_name = None
@@ -16,18 +18,18 @@ _model_name = None
 def _get_model(model_name: str, device: str = "cpu"):
     """获取或加载模型（单例模式）"""
     global _model, _model_name
-    
+
     if _model is None or _model_name != model_name:
         from sentence_transformers import SentenceTransformer
         _model = SentenceTransformer(model_name, device=device)
         _model_name = model_name
-    
+
     return _model
 
 
 class EmbeddingService:
     """Embedding 服务类"""
-    
+
     def __init__(
         self,
         model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
@@ -35,7 +37,7 @@ class EmbeddingService:
         batch_size: int = 32,
     ):
         """初始化 Embedding 服务
-        
+
         Args:
             model_name: 模型名称
             device: 设备（cpu/cuda）
@@ -45,51 +47,51 @@ class EmbeddingService:
         self.device = device
         self.batch_size = batch_size
         self._model = None
-    
+
     @property
     def model(self):
         """延迟加载模型"""
         if self._model is None:
             self._model = _get_model(self.model_name, self.device)
         return self._model
-    
+
     def encode(
         self,
         texts: Union[str, List[str]],
         normalize: bool = True,
     ) -> np.ndarray:
         """将文本转换为向量
-        
+
         Args:
             texts: 单个文本或文本列表
             normalize: 是否归一化向量
-            
+
         Returns:
             向量数组，shape=(n, dim)
         """
         if isinstance(texts, str):
             texts = [texts]
-        
+
         embeddings = self.model.encode(
             texts,
             batch_size=self.batch_size,
             normalize_embeddings=normalize,
             show_progress_bar=False,
         )
-        
+
         return embeddings
-    
+
     def similarity(
         self,
         query: Union[str, np.ndarray],
         candidates: Union[List[str], np.ndarray],
     ) -> np.ndarray:
         """计算查询与候选项之间的相似度
-        
+
         Args:
             query: 查询文本或向量
             candidates: 候选文本列表或向量数组
-            
+
         Returns:
             相似度数组
         """
@@ -98,21 +100,21 @@ class EmbeddingService:
             query_vec = self.encode(query)
         else:
             query_vec = query
-        
+
         if isinstance(candidates, list) and isinstance(candidates[0], str):
             candidate_vecs = self.encode(candidates)
         else:
             candidate_vecs = candidates
-        
+
         # 确保向量是二维的
         if query_vec.ndim == 1:
             query_vec = query_vec.reshape(1, -1)
-        
+
         # 计算余弦相似度（假设向量已归一化）
         similarities = np.dot(query_vec, candidate_vecs.T).flatten()
-        
+
         return similarities
-    
+
     def get_dimension(self) -> int:
         """获取向量维度"""
         return self.model.get_sentence_embedding_dimension()
@@ -120,25 +122,41 @@ class EmbeddingService:
 
 # 全局单例
 _embedding_service: Optional[EmbeddingService] = None
+_embedding_config: Optional[dict] = None
 
 
 def get_embedding_service(
-    model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
-    device: str = "cpu",
+    model_name: Optional[str] = None,
+    device: Optional[str] = None,
 ) -> EmbeddingService:
     """获取 Embedding 服务单例
-    
+
     Args:
-        model_name: 模型名称
-        device: 设备
-        
+        model_name: 模型名称，默认从配置文件读取
+        device: 设备，默认从配置文件读取
+
     Returns:
         EmbeddingService 实例
     """
-    global _embedding_service
-    
-    if _embedding_service is None:
-        _embedding_service = EmbeddingService(model_name, device)
-    
-    return _embedding_service
+    global _embedding_service, _embedding_config
 
+    # 从配置文件读取默认值
+    config_model = get_config(
+        "embedding.model", "sentence-transformers/all-MiniLM-L6-v2")
+    config_device = get_config("embedding.device", "cpu")
+    config_batch_size = get_config("embedding.batch_size", 32)
+
+    # 使用传入参数或配置文件值
+    model_name = model_name or config_model
+    device = device or config_device
+
+    # 检查配置是否变化，如果变化则重新创建实例
+    current_config = {"model_name": model_name,
+                      "device": device, "batch_size": config_batch_size}
+
+    if _embedding_service is None or _embedding_config != current_config:
+        _embedding_service = EmbeddingService(
+            model_name, device, config_batch_size)
+        _embedding_config = current_config
+
+    return _embedding_service
