@@ -138,6 +138,12 @@ def parse_args():
         help="生成温度",
     )
 
+    parser.add_argument(
+        "--no-thinking",
+        action="store_true",
+        help="关闭 Qwen3 系列模型的思考模式（仅对本地 vLLM/SGLang 部署有效）",
+    )
+
     # MaTTS 参数
     parser.add_argument(
         "--matts",
@@ -263,6 +269,7 @@ def run_single_turn(args, logger):
         model=args.model,
         temperature=args.temperature,
         debug=args.debug,
+        enable_thinking=False if args.no_thinking else None,
     )
 
     # 根据 MaTTS 模式选择运行方式
@@ -419,6 +426,7 @@ def run_multi_turn(args, logger):
         model=args.model,
         temperature=args.temperature,
         debug=args.debug,
+        enable_thinking=False if args.no_thinking else None,
     )
 
     # 创建 Extractor

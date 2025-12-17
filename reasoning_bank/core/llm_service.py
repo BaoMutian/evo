@@ -46,6 +46,7 @@ class LLMService:
         timeout: int = 120,
         max_retries: int = 3,
         debug: bool = False,
+        enable_thinking: Optional[bool] = None,
     ):
         """初始化 LLM 服务
 
@@ -58,6 +59,7 @@ class LLMService:
             timeout: 请求超时时间
             max_retries: 最大重试次数
             debug: 是否开启调试模式（打印完整 prompt 和响应）
+            enable_thinking: Qwen3 思考模式开关（None=不传递使用模型默认，True=开启，False=关闭）
         """
         # 从配置或环境变量获取参数
         self.api_key = api_key or os.getenv(
@@ -71,6 +73,7 @@ class LLMService:
         self.timeout = timeout
         self.max_retries = max_retries
         self.debug = debug
+        self.enable_thinking = enable_thinking
 
         if not self.api_key:
             raise ValueError("API Key 未设置，请设置环境变量 OPENROUTER_API_KEY 或在配置中指定")
@@ -218,6 +221,11 @@ class LLMService:
                 if max_tokens and max_tokens > 0:
                     params["max_tokens"] = max_tokens
 
+                # Qwen3 思考模式控制（通过 extra_body 传递给 vLLM/SGLang）
+                if self.enable_thinking is not None:
+                    params["extra_body"] = {
+                        "enable_thinking": self.enable_thinking}
+
                 completion = self.sync_client.chat.completions.create(**params)
 
                 if stream:
@@ -307,6 +315,11 @@ class LLMService:
 
                 if max_tokens and max_tokens > 0:
                     params["max_tokens"] = max_tokens
+
+                # Qwen3 思考模式控制
+                if self.enable_thinking is not None:
+                    params["extra_body"] = {
+                        "enable_thinking": self.enable_thinking}
 
                 completion = await self.async_client.chat.completions.create(**params)
 
