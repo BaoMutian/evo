@@ -118,6 +118,20 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--api-base",
+        type=str,
+        default=None,
+        help="LLM API 地址（支持 OpenAI 兼容服务，如 vLLM: http://localhost:8000/v1）",
+    )
+
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        default=None,
+        help="LLM API 密钥（本地服务可设为任意值）",
+    )
+
+    parser.add_argument(
         "--temperature", "-t",
         type=float,
         default=0.3,
@@ -244,6 +258,8 @@ def run_single_turn(args, logger):
 
     # 创建 LLM 服务
     llm_service = LLMService(
+        api_key=args.api_key,
+        api_base=args.api_base,
         model=args.model,
         temperature=args.temperature,
         debug=args.debug,
@@ -398,6 +414,8 @@ def run_multi_turn(args, logger):
 
     # 创建 LLM 服务
     llm = LLMService(
+        api_key=args.api_key,
+        api_base=args.api_base,
         model=args.model,
         temperature=args.temperature,
         debug=args.debug,
